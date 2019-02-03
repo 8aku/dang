@@ -9,7 +9,7 @@ public class Board {
 
     private int[][] tileArray;
     private int[][] markedTiles;
-    final int GRID_SIZE = 4;
+    final int GRID_SIZE = 16;
     private final int NUM_TYPES = 4;
     MainActivity activity;
 

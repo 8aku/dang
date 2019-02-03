@@ -1,6 +1,9 @@
 package com.example.r.dangver1;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -12,11 +15,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     private MainThread thread;
     private Board board;
-    private int[] tileColors;
+    private android.graphics.Bitmap[] tileTypes;
     private final int TILE_SIZE = 64;
     private int time;
 
-    public GameView (Context context, Board board) {
+    public GameView(Context context, Board board) {
         super(context);
         this.board = board;
 
@@ -24,12 +27,20 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         thread = new MainThread(getHolder(), this);
 
-        tileColors = new int[4];
+        Resources res = getResources();
+        tileTypes = new android.graphics.Bitmap[4];
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
 
-        tileColors[0] = Color.BLACK;
-        tileColors[1] = Color.RED;
-        tileColors[2] = Color.GREEN;
-        tileColors[3] = Color.YELLOW;
+        //make less repetitive
+        Bitmap type1_bitmap = BitmapFactory.decodeResource(res, R.drawable.blue_tiles);
+        Bitmap type2_bitmap = BitmapFactory.decodeResource(res, R.drawable.pink_tiles);
+        Bitmap type3_bitmap = BitmapFactory.decodeResource(res, R.drawable.green_tiles);
+
+        tileTypes[0] = Bitmap.createBitmap(16, 16, conf);
+
+        tileTypes[1] = type1_bitmap;
+        tileTypes[2] = type2_bitmap;
+        tileTypes[3] = type3_bitmap;
 
         setFocusable(true);
 
@@ -87,14 +98,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             Paint paint = new Paint();
             for (int i = 0; i < board.getGridSize(); i++) {
                 for (int j = 0; j < board.getGridSize(); j++) {
-                    paint.setColor(tileColors[board.getTile(i,j)]);
-                    canvas.drawRect((i * TILE_SIZE), (j * TILE_SIZE), ( i * TILE_SIZE) + TILE_SIZE, (j * TILE_SIZE) + TILE_SIZE, paint);
+
+                    canvas.drawBitmap(tileTypes[board.getTile(i, j)], i * TILE_SIZE, j * TILE_SIZE, paint);
                 }
             }
 
             paint.setTextSize(56);
             paint.setColor(Color.WHITE);
-            canvas.drawText(String.valueOf(time), 128, 512, paint);
+            canvas.drawText("TIME REMAINING: " + String.valueOf(time), 128, 1200, paint);
         }
     }
 }
