@@ -1,20 +1,26 @@
 package com.example.r.dangver1;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+
 import java.util.Random;
 
 public class Board {
 
-    private int [][] tileArray;
-    private int [][] markedTiles;
-    final int GRID_SIZE = 16;
+    private int[][] tileArray;
+    private int[][] markedTiles;
+    final int GRID_SIZE = 4;
     private final int NUM_TYPES = 4;
+    MainActivity activity;
 
-    public Board() {
+    public Board(MainActivity activity) {
+        this.activity = activity;
         tileArray = new int[GRID_SIZE][GRID_SIZE];
         markedTiles = new int[GRID_SIZE][GRID_SIZE];
 
         Random rand = new Random();
         int min = 1;
-        int max = NUM_TYPES -1;
+        int max = NUM_TYPES - 1;
 
         for (int i = 0; i < GRID_SIZE; i++) {
             for (int j = 0; j < GRID_SIZE; j++) {
@@ -37,15 +43,19 @@ public class Board {
 
     //Checks to see if tile is on the board.
     private boolean isInBounds(int x, int y) {
-        return ((x < GRID_SIZE && x >=0) && (y < GRID_SIZE && y >=0));
+        return ((x < GRID_SIZE && x >= 0) && (y < GRID_SIZE && y >= 0));
     }
 
     //If the tile has neighbors of the same type, delete the tiles and increment surrounding tiles.
-    public void boardClicked(int posX, int posY) {
-        if (hasNeighbors(posX, posY)) {
+    public void boardClicked(int x, int y) {
+        if (hasNeighbors(x, y)) {
             resetMarkedTiles();
-            deleteTile(posX, posY, tileArray[posX][posY]);
+            deleteTile(x, y, tileArray[x][y]);
             incrementTiles();
+
+            if (noMoreMoves()) {
+                showEndDialog();
+            }
         }
     }
 
@@ -58,7 +68,11 @@ public class Board {
     }
 
     //Increments tile in array, changing its "type".
-    private void incrementTile(int x, int y, int type){
+    private void incrementTile(int x, int y, int type) {
+
+        if (type == NUM_TYPES - 1)
+            type -= 1;
+
         if (tileArray[x][y] != 0) {
             tileArray[x][y] += type;
 
@@ -73,9 +87,9 @@ public class Board {
     private void incrementTiles() {
         for (int i = 0; i < GRID_SIZE; i++) {
             for (int j = 0; j < GRID_SIZE; j++) {
-               if (markedTiles[i][j] > 0) {
-                   incrementTile(i, j, markedTiles[i][j]);
-               }
+                if (markedTiles[i][j] > 0) {
+                    incrementTile(i, j, markedTiles[i][j]);
+                }
             }
         }
     }
@@ -90,8 +104,32 @@ public class Board {
                     (isInBounds(x + 1, y) && tileArray[x + 1][y] == type) ||
                     (isInBounds(x, y - 1) && tileArray[x][y - 1] == type) ||
                     (isInBounds(x, y + 1) && tileArray[x][y + 1] == type));
+        } else return false;
+    }
+
+    //Checks if there are any moves left on the board.
+    private boolean noMoreMoves() {
+
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
+                if (tileArray[i][j] != 0 && hasNeighbors(i, j)) {
+                    return false;
+                }
+            }
         }
-        else return false;
+
+        return true;
+    }
+
+    private void showEndDialog() {
+        new AlertDialog.Builder(activity).setTitle("G A M E  O V E R")
+                .setCancelable(false)
+                .setPositiveButton("got it", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        activity.finish();
+                    }
+                })
+                .show();
     }
 
     //"Deletes" the tiles.
